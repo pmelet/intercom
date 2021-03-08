@@ -42,7 +42,8 @@ func serve(wg *sync.WaitGroup, ctx *shellContext, listener net.Listener) error {
 
 func handleConnection(conf *Configuration, c net.Conn) {
 	defer c.Close()
-	//enc := gob.NewEncoder(c)
+	fmt.Println("Accepted connection")
+
 	sr := beep.SampleRate(44100)
 	w := &Wave{SampleRate: sr, freq: conf.freqhz}
 

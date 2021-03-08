@@ -179,6 +179,7 @@ func stopListenContact(ctx *shellContext, args []string) (err error) {
 func listenContact(ctx *shellContext, contact *Contact) error {
 	conn, err := net.DialTCP("tcp4", nil, &contact.Addr)
 	if err != nil {
+		fmt.Println("Connection failed", contact, err)
 		return err
 	}
 	defer conn.Close()
