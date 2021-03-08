@@ -28,7 +28,7 @@ func mainLoop(conf *Configuration, server bool, client bool) {
 	}
 	wg.Add(nbRoutines)
 	if server {
-		listener, lstAddr, err := getListenSocket()
+		listener, lstAddr, err := getListenSocket(conf)
 		if err != nil {
 			fmt.Println(err)
 			return
@@ -83,10 +83,12 @@ func main() {
 	server := flag.Bool("s", false, "Server")
 	client := flag.Bool("c", false, "Client")
 	freqhz := flag.Float64("f", 220.0, "Frequency emitted")
+	port := flag.Int("p", 0, "TCP Port for server")
 	flag.Parse()
 
 	conf := Configuration{contactTTL: time.Minute}
 	conf.freqhz = *freqhz
+	conf.port = *port
 
 	mainLoop(&conf, *server, *client)
 }

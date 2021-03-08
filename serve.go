@@ -11,8 +11,8 @@ import (
 	"github.com/faiface/beep"
 )
 
-func getListenSocket() (listener net.Listener, addr net.TCPAddr, err error) {
-	lstAddr, err := net.ResolveTCPAddr("tcp", ":0")
+func getListenSocket(conf *Configuration) (listener net.Listener, addr net.TCPAddr, err error) {
+	lstAddr, err := net.ResolveTCPAddr("tcp", fmt.Sprintf(":%d", conf.port))
 	if err != nil {
 		return
 	}

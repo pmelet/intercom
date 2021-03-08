@@ -42,6 +42,7 @@ type shellContext struct {
 type Configuration struct {
 	contactTTL time.Duration
 	freqhz     float64
+	port       int
 }
 
 type Block struct {
