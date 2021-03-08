@@ -4,6 +4,8 @@ import (
 	"net"
 	"sync"
 	"time"
+
+	"github.com/faiface/beep"
 )
 
 type Manifest struct {
@@ -16,6 +18,7 @@ type Contact struct {
 	Addr      net.TCPAddr
 	Hostname  string
 	ID        string
+	index     int
 	last      time.Time
 	ttl       time.Duration
 	bs        BufferedStreamer
@@ -33,6 +36,7 @@ type shellContext struct {
 	mutex    sync.Mutex
 	keys     map[string]bool
 	conf     *Configuration
+	mixer    *beep.Mixer
 }
 
 type Configuration struct {

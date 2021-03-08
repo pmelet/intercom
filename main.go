@@ -6,13 +6,17 @@ import (
 	"sync"
 	"time"
 
+	"github.com/faiface/beep"
 	"github.com/google/uuid"
 )
 
 func mainLoop(conf *Configuration, server bool, client bool) {
 	id := uuid.NewString()
 	contacts := Contacts{contacts: make(map[string]*Contact)}
-	context := shellContext{contacts: &contacts, ID: id, keys: make(map[string]bool), conf: conf}
+	mixer := beep.Mixer{}
+	sr := beep.SampleRate(44100)
+
+	context := shellContext{contacts: &contacts, ID: id, keys: make(map[string]bool), conf: conf, mixer: &mixer}
 
 	wg := sync.WaitGroup{}
 	nbRoutines := 1
@@ -39,6 +43,7 @@ func mainLoop(conf *Configuration, server bool, client bool) {
 		go listenAdv(&wg, &context)
 	}
 	// shell
+	go playStream(&mixer, sr)
 	go shell(&wg, &context)
 	wg.Wait()
 }

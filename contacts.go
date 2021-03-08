@@ -2,11 +2,12 @@ package main
 
 import (
 	"fmt"
+	"strconv"
 	"time"
 )
 
 func (c Contact) String() string {
-	return fmt.Sprintf("%s (%s:%d)", c.Hostname, c.Addr.IP, c.Addr.Port)
+	return fmt.Sprintf("#%d %s %s (%s:%d)", c.index, c.Hostname, c.ID, c.Addr.IP, c.Addr.Port)
 }
 
 func (c *Contacts) check() {
@@ -24,7 +25,7 @@ func (c *Contacts) add(contact *Contact) {
 	c.mutex.Lock()
 	_, found := c.contacts[contact.ID]
 	if !found {
-		fmt.Printf("add %p\n", contact)
+		//fmt.Printf("add %p\n", contact)
 		c.contacts[contact.ID] = contact
 	} else {
 		c.contacts[contact.ID].last = time.Now()
@@ -32,12 +33,16 @@ func (c *Contacts) add(contact *Contact) {
 	c.mutex.Unlock()
 }
 
+func (c *Contacts) Len() int {
+	return len(c.contacts)
+}
+
 func (c *Contact) Stop() {
 	c.bs.drain = true
 	c.listening = false
 }
 
-func (contacts *Contacts) find(args []string) (<-chan *Contact, error) {
+func (contacts *Contacts) find(args []string) <-chan *Contact {
 	ret := make(chan *Contact)
 	go func() {
 		if len(args) == 0 {
@@ -46,19 +51,35 @@ func (contacts *Contacts) find(args []string) (<-chan *Contact, error) {
 			}
 		}
 		for _, c := range args {
-			val, found := contacts.contacts[c]
-			if found {
-				ret <- val
-			} else {
+			if c[0] == '#' {
+				// by index
+				index, err := strconv.Atoi(c[1:])
+				if err != nil {
+					return
+				}
 				for _, v := range contacts.contacts {
-					if v.Hostname == c {
+					if v.index == index {
 						ret <- v
 						break
+					}
+				}
+			} else {
+				// try the uid
+				val, found := contacts.contacts[c]
+				if found {
+					ret <- val
+				} else {
+					// try the hostname
+					for _, v := range contacts.contacts {
+						if v.Hostname == c {
+							ret <- v
+							break
+						}
 					}
 				}
 			}
 		}
 		close(ret)
 	}()
-	return ret, nil
+	return ret
 }

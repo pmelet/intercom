@@ -144,43 +144,39 @@ func muteSound(ctx *shellContext, args []string) (err error) {
 }
 
 func listContacts(ctx *shellContext, args []string) (err error) {
-	for k, v := range ctx.contacts.contacts {
+	for _, v := range ctx.contacts.contacts {
 		l := " "
 		if v.listening {
 			l = "*"
 		}
-		fmt.Printf("%s %s %s %p\n", l, k, v, v)
+		fmt.Printf("%s %s\n", l, v)
 	}
 	return
 }
 
 func startListenContact(ctx *shellContext, args []string) (err error) {
 	var contact *Contact
-	contacts, err := ctx.contacts.find(args)
-	if err != nil {
-		return
-	}
+	contacts := ctx.contacts.find(args)
 	for contact = range contacts {
-		fmt.Printf("listen %p\n", contact)
-		go listenContact(contact)
+		fmt.Printf("listen %s\n", contact)
+		go listenContact(ctx, contact)
 	}
 	return
 }
 
 func stopListenContact(ctx *shellContext, args []string) (err error) {
 	var contact *Contact
-	contacts, err := ctx.contacts.find(args)
-	if err != nil {
-		return
-	}
+	contacts := ctx.contacts.find(args)
 	for contact = range contacts {
-		fmt.Printf("mute %p\n", contact)
-		contact.Stop()
+		if contact.listening {
+			fmt.Printf("mute %s\n", contact)
+			contact.Stop()
+		}
 	}
 	return
 }
 
-func listenContact(contact *Contact) error {
+func listenContact(ctx *shellContext, contact *Contact) error {
 	conn, err := net.DialTCP("tcp4", nil, &contact.Addr)
 	if err != nil {
 		return err
@@ -191,7 +187,7 @@ func listenContact(contact *Contact) error {
 	contact.bs = BufferedStreamer{SampleRate: sr}
 	contact.listening = true
 
-	go playStream(&contact.bs, sr)
+	ctx.mixer.Add(&contact.bs)
 
 	for {
 		var left float64

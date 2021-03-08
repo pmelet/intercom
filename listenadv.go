@@ -39,7 +39,7 @@ func listenAdv(wg *sync.WaitGroup, ctx *shellContext) error {
 
 		lstAddr := net.TCPAddr{IP: udpAddr.IP, Port: m.Addr.Port, Zone: m.Addr.Zone}
 
-		contact := Contact{Addr: lstAddr, Hostname: m.Hostname, ID: m.ID, last: time.Now(), ttl: ctx.conf.contactTTL}
+		contact := Contact{Addr: lstAddr, Hostname: m.Hostname, ID: m.ID, last: time.Now(), ttl: ctx.conf.contactTTL, index: ctx.contacts.Len()}
 		ctx.contacts.check()
 		ctx.contacts.add(&contact)
 	}

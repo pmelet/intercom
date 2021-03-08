@@ -74,7 +74,6 @@ func (w *BufferedStreamer) Stream(samples [][2]float64) (n int, ok bool) {
 	for i := range samples {
 		front := w.samples.Pop()
 		if front == nil {
-			fmt.Println("Not enough data in buffer !")
 			return i, true
 		}
 		pair, ok := front.([2]float64)
@@ -108,7 +107,9 @@ func play(quit chan bool) {
 }
 
 func playStream(s beep.Streamer, sr beep.SampleRate) {
+	fmt.Println("Start speaker")
 	defer speaker.Close()
+	defer fmt.Println("Close speaker")
 	speaker.Init(sr, sr.N(time.Second/10))
 	speaker.Play(s)
 	select {}
